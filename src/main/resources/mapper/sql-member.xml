@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0/EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="board.mapper.MemberMapper">
+	<select id="selectMemberList" resultType="board.dto.MemberDto">
+		select member_seq, member_name, member_email
+		     , date_format(created_datetime, '%Y.%m.%d %H:%i:%s') as created_datetime
+		  from t_member
+		 where deleted_yn = 'N'
+		 order by member_seq desc 
+	</select>
+	
+	<insert id="insertMember" parameterType="board.dto.MemberDto">
+		insert into t_member (member_name, member_pass, member_email, created_datetime, creator_id) 
+		values ( #{memberName}, #{memberPass}, #{memberEmail}, now(), 'admin' )
+		<selectKey keyProperty="memberSeq" resultType="Integer">
+        	select last_insert_id()
+    	</selectKey>
+	</insert>
+	
+	<select id="selectMemberDetail" parameterType="int" resultType="board.dto.MemberDto">
+		select member_name, member_pass, member_email
+		     , date_format(created_datetime, '%Y.%m.%d %H:%i:%s') as created_datetime
+		     , creator_id
+		  from t_member
+		 where deleted_yn = 'N' and member_seq = #{meberSeq} 
+	</select>
+	
+	<update id="updateMember" parameterType="board.dto.MemberDto">
+		update t_member set member_pass = #{memberPass}, member_email = #{memberEmail}
+		                 , updated_datetime = now(), updator_id = 'admin'
+		             where member_seq = #{memberSeq}
+	</update>
+	
+	<delete id="deleteMember" parameterType="int">
+		update t_member set deleted_yn = 'Y', updated_datetime = now(), updator_id = 'admin'
+		             where member_seq = #{memberSeq}
+	</delete>
+	
+	<select id="login" parameterType="board.dto.MemberDto" resultType="board.dto.MemberDto">
+		select * from t_member 
+		 where member_email = #{memberEmail} and member_pass = #{memberPass}	
+	</select>
+</mapper>
